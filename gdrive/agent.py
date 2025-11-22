@@ -124,7 +124,7 @@ def read_drive_file(file_id: str):
 def gdrive():
     return LlmAgent(
     model='gemini-2.0-flash',
-    name='gsuite_assistant_agent',
+    name='agents',
     instruction=(
         "You are a Google Drive Assistant. Your job is to help the user manage "
         "and read their Google Drive files using the available tools. "
@@ -152,7 +152,7 @@ root_agent = gdrive()
 
 runner = Runner(
     agent=root_agent,
-    app_name="gdrive",
+    app_name="agents",
     session_service=session_service,
 )
 

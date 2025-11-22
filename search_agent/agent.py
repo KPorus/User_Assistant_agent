@@ -49,7 +49,7 @@ Respond both accurately and creatively, without unnecessary repetition. You are 
 def create_search_agent():
     return LlmAgent(
         model=Gemini(model="gemini-2.0-flash", retry_options=retry_config),
-        name="agent",
+        name="agents",
         instruction=complex_instruction,
         tools=[google_search],
     )
@@ -57,7 +57,7 @@ def create_search_agent():
 root_agent = create_search_agent()
 runner = Runner(
     agent=root_agent,
-    app_name="search_agent",
+    app_name="agents",
     session_service=session_service,
 )
 
