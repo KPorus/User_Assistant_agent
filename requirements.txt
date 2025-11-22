@@ -1,3 +1,11 @@
+google-adk
+dotenv
 elevenlabs
 praw
 fpdf2
+google-auth 
+google-auth-oauthlib 
+google-api-python-client 
+modelcontextprotocol
+googlemaps
+google-cloud-aiplatform[adk,agent_engines]
