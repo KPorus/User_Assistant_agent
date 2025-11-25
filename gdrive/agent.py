@@ -32,14 +32,7 @@ retry_config = types.HttpRetryOptions(
 
 KEYFILE_PATH = os.getcwd() + "/gdrive/credentials/oauth.keys.json"
 GDRIVE_CREDENTIALS_PATH = os.getcwd() + "/gdrive/credentials/.gdrive-server-credentials.json"
-# GMAIL_CREDENTIALS_PATH = os.getcwd() + "/gsuite/credentials/.gmail-server-credentials.json"
 DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive"]
-# GMAIL_SCOPES = [
-#     "https://www.googleapis.com/auth/gmail.modify",
-#     "https://www.googleapis.com/auth/gmail.send",
-#         "https://www.googleapis.com/auth/userinfo.email",
-#     "https://www.googleapis.com/auth/userinfo.profile"
-#     ]
 PORT = 8080
 
 
