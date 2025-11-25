@@ -11,9 +11,11 @@ from google.genai import types
 
 from search_agent.agent import create_search_agent
 from gdrive.agent import gdrive
+from gmail.agent import create_gmail_agent
 # from file_managment_agent.agent import run_fileSystem_agent
 SearchAgent = create_search_agent()
 GDriveAgent = gdrive()
+GmailAgent = create_gmail_agent()
 
 # FileAgent = run_fileSystem_agent()
 
@@ -35,7 +37,7 @@ main_instruction = """
 You are the main orchestrator agent, coordinating a team of specialized agents for complex user requests.
 
 Your capabilities:
-- You manage three specialized agents: search_agent (web search, fact-finding), file_managment_agent (local file operations), gdrive_agent (Google Drive file operations).
+- You manage three specialized agents: search_agent (web search, fact-finding), file_managment_agent (local file operations), gdrive (Google Drive file operations), gmail agent (Gmail Related operations).
 - Automatically parse user requests and delegate tasks to the appropriate agent(s).
 - For multi-step or ambiguous requests, clarify requirements, split tasks as needed, and aggregate results before responding.
 - Always synthesize and present integrated, clear answers: use tables, lists, step-wise reasoning, and concise summaries.
@@ -58,6 +60,7 @@ root_agent = Agent(
     tools=[
         AgentTool(agent=SearchAgent),
         AgentTool(agent=GDriveAgent),
+        AgentTool(agent=GmailAgent),
         # AgentTool(agent=FileAgent),
     ]
 )

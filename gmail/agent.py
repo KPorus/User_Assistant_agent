@@ -102,10 +102,11 @@ def get_current_user_email_id():
     }
 
 
-async def send_email(sender_id: str, recipient_id: str, subject: str, message: str):
+async def send_email(recipient_id: str, subject: str, message: str):
     """Send email using Gmail API."""
     client = get_gmail_client()
-
+    sender_id = client.users().getProfile(userId="me").execute().get("emailAddress", "")
+    print("sender ID:",sender_id)
     msg = EmailMessage()
     msg.set_content(message)
     msg["To"] = recipient_id
