@@ -229,6 +229,37 @@ async def get_trash_mail(max_emails=10, batch_size=5):
     return results[:max_emails]
 
 
+async def get_spam_mail(max_emails=10, batch_size=5):
+    """Fetch recent spam emails (subject, from, id) in list format."""
+    client = get_gmail_client()
+    query = "in:spam"
+    results = []
+    next_page_token = None
+    fetched = 0
+    while fetched < max_emails:
+        response = client.users().messages().list(
+            userId="me", q=query, maxResults=batch_size,
+            pageToken=next_page_token
+        ).execute()
+        messages = response.get("messages", [])
+        for msg in messages:
+            detail = client.users().messages().get(
+                userId="me", id=msg["id"], format="metadata",
+                metadataHeaders=["Subject", "From"]
+            ).execute()
+            headers = {h["name"]: h["value"] for h in detail["payload"]["headers"]}
+            results.append({
+                "id": msg["id"],
+                "subject": headers.get("Subject", ""),
+                "from": headers.get("From", "")
+            })
+        fetched += len(messages)
+        next_page_token = response.get("nextPageToken")
+        if not next_page_token or fetched >= max_emails:
+            break
+    return results[:max_emails]
+
+
 # async def get_emails(type: str = None, max_emails=50, batch_size=5):
 #     """Efficiently fetch subject/from for each email via pagination. Present in list format."""
 #     client = get_gmail_client()
@@ -363,6 +394,7 @@ def create_gmail_agent():
         get_emails,
         get_trash_mail,
         get_draft_mail,
+        get_spam_mail,
         read_email_content,
         delete_email,
         delete__trash_email,
