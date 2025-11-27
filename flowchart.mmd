@@ -1,57 +1,68 @@
-%% File: tool-call-flowchart.mmd
-%% Description: Flowchart showing how main agent routes to specialized agents
-
 flowchart TD
     Start([User Query]) --> Parse[Main Agent: Parse Query]
     Parse --> Detect{Service Detected?}
-    
-    Detect -->|Gmail Keywords<br/>'email', 'inbox', 'send', 'compose'| RouteGmail[Gmail Agent Router]
-    Detect -->|Drive Keywords<br/>'file', 'document', 'upload', 'share'| RouteDrive[Drive Agent Router]
-    Detect -->|Calendar Keywords<br/>'meeting', 'schedule', 'event', 'reminder'| RouteCal[Calendar Agent Router]
-    Detect -->|Multiple Services| RouteMulti[Multi-Agent Orchestration]
-    Detect -->|None Detected| RouteGeneral[General Response Tool]
-    
+
+    %% Service Detection
+    Detect -->|Gmail: email, inbox, send, compose| RouteGmail[Gmail Agent Router]
+    Detect -->|Drive: file, document, upload, share| RouteDrive[Drive Agent Router]
+    Detect -->|Calendar: meeting, event, schedule| RouteCal[Calendar Agent Router]
+    Detect -->|Search: search, find, google, who is, research| RouteSearch[Search Agent Router]
+    %% Detect -->|Multiple Services| RouteMulti[Multi-Agent Orchestration]
+    Detect -->|None / General| RouteGeneral[General LLM Response]
+
+    %% Gmail Branch
     RouteGmail --> AuthG{Gmail Auth Valid?}
-    AuthG -- Yes --> GmailTools[Gmail Tools Execution]
-    AuthG -- No --> RefreshG[Gmail Token Refresh]
-    RefreshG --> AuthG
-    
+    AuthG -- Yes --> GmailTools[Gmail Tools]
+    AuthG -- No --> RefreshG[Gmail Token Refresh] --> AuthG
+    GmailTools --> G1["Search Emails<br/>search_emails(query)"]
+    GmailTools --> G2["Send Email<br/>send_email(to, subject, body)"]
+    GmailTools --> G3["Read Thread<br/>get_thread(id)"]
+
+    %% Drive Branch (UPDATED: Current vs Future)
     RouteDrive --> AuthD{Drive Auth Valid?}
-    AuthD -- Yes --> DriveTools[Drive Tools Execution]
-    AuthD -- No --> RefreshD[Drive Token Refresh]
-    RefreshD --> AuthD
-    
+    AuthD -- Yes --> DriveTools[Drive Tools]
+    AuthD -- No --> RefreshD[Drive Token Refresh] --> AuthD
+    DriveTools --> D1["✅ List Files<br/>search_files(query)"]
+    DriveTools --> D2["✅ Read Files<br/>download_file(id)"]
+    DriveTools --> D3["🚧 FUTURE: Share<br/>share_file(id, email)"]
+    DriveTools --> D4["🚧 FUTURE: Upload<br/>upload_file(path)"]
+    DriveTools --> D5["🚧 FUTURE: Delete<br/>delete_file(id)"]
+
+    %% Calendar Branch
     RouteCal --> AuthC{Calendar Auth Valid?}
-    AuthC -- Yes --> CalTools[Calendar Tools Execution]
-    AuthC -- No --> RefreshC[Calendar Token Refresh]
-    RefreshC --> AuthC
-    
-    GmailTools --> G1[Search Emails Tool<br/>gmail.search_emails(query)]
-    GmailTools --> G2[Send Email Tool<br/>gmail.send_email(recipients, subject, body)]
-    GmailTools --> G3[Get Email Thread<br/>gmail.get_thread(thread_id)]
-    
-    DriveTools --> D1[Search Files Tool<br/>drive.search_files(query, title_search=true)]
-    DriveTools --> D2[Upload File Tool<br/>drive.upload_file(file_path, folder_id)]
-    DriveTools --> D3[Share Document<br/>drive.share_file(file_id, email, role)]
-    
-    CalTools --> C1[Create Event Tool<br/>calendar.create_event(summary, start, end, attendees)]
-    CalTools --> C2[Find Free Time<br/>calendar.find_free_time(user_email, duration)]
-    CalTools --> C3[Get Events Tool<br/>calendar.get_events(start_date, end_date)]
-    
-    RouteMulti --> Parallel[Parallel Agent Execution<br/>- Gmail: Mark as read<br/>- Calendar: Add reminder<br/>- Drive: Attach file]
-    
-    G1 & G2 & G3 & D1 & D2 & D3 & C1 & C2 & C3 & Parallel & RouteGeneral --> Format[Main Agent: Format Response]
-    Format --> Log[Log Interaction]
-    Log --> End[Return to User]
-    
-    classDef startEnd fill:#4CAF50,stroke:#333,color:white
-    classDef decision fill:#FF9800,stroke:#333,color:white
-    classDef process fill:#2196F3,stroke:#333,color:white
-    classDef tools fill:#00BCD4,stroke:#333,color:white
-    classDef auth fill:#9C27B0,stroke:#333,color:white
-    
+    AuthC -- Yes --> CalTools[Calendar Tools]
+    AuthC -- No --> RefreshC[Calendar Token Refresh] --> AuthC
+    CalTools --> C1["Create Event<br/>create_event(...)"]
+    CalTools --> C2["Find Free Time<br/>find_free_slots()"]
+    CalTools --> C3["List Events<br/>get_events(range)"]
+
+    %% Search Agent Branch
+    RouteSearch --> SearchTools[Search Agent Tools]
+    SearchTools --> S1["Web Search<br/>web_search(query)"]
+    SearchTools --> S2["Browse Page<br/>browse_url(url, instructions)"]
+    SearchTools --> S4["X/Twitter Search<br/>twitter_search(query)"]
+    SearchTools --> S5["Summarize Results<br/>summarize(results)"]
+
+    %% Convergence (UPDATED for new Drive nodes)
+    G1 & G2 & G3 --> Format
+    D1 & D2 & D3 & D4 & D5 --> Format
+    C1 & C2 & C3 --> Format
+    S1 & S2 & S4 & S5 --> Format
+    RouteGeneral --> Format
+
+    Format[Main Agent: Aggregate & Format Response] --> Log[Log Interaction + Tools Used]
+    Log --> End([Return Final Answer to User])
+
+    %% Styling
+    classDef startEnd fill:#1DB954,stroke:#fff,color:white,font-weight:bold
+    classDef decision fill:#FF5722,stroke:#fff,color:white
+    classDef process fill:#2196F3,stroke:#fff,color:white
+    classDef tools fill:#9C27B0,stroke:#fff,color:white
+    classDef search fill:#FF9800,stroke:#fff,color:white
+    classDef auth fill:#607D8B,stroke:#fff,color:white
+
     class Start,End startEnd
     class Detect,AuthG,AuthD,AuthC decision
-    class Parse,RouteGmail,RouteDrive,RouteCal,RouteMulti,RouteGeneral,RefreshG,RefreshD,RefreshC,Format,Log,Parallel process
-    class G1,G2,G3,D1,D2,D3,C1,C2,C3 tools
-    class AuthG,AuthD,AuthC auth
+    class Parse,RouteGmail,RouteDrive,RouteCal,RouteSearch,RouteMulti,RouteGeneral,RefreshG,RefreshD,RefreshC,Format,Log,SearchTools,DriveTools process
+    class G1,G2,G3,D1,D2,D3,D4,D5,C1,C2,C3 tools
+    class S1,S2,S4,S5 search
