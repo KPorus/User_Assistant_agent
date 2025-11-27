@@ -12,8 +12,7 @@ Only an agent loop (observe → plan → use tools → observe again → repeat)
 
 ### What I created – Overall architecture (2025 version)
 
-![Architecture diagram](image-1.png)
-
+![Architecture diagram](<AI MODEL-2025-11-27-130752-1.png>)
 - Core model: Gemini-2.0-flash 
 - Framework: Google ADK, Google Cloud Platform  
 - Authentication: OAuth2 by Google cloud platform 
