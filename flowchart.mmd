@@ -1,14 +1,16 @@
 flowchart TD
     Start([User Query]) --> Parse[Main Agent: Parse Query]
+    %% --> Parse[Multi-Agent Orchestration]
     Parse --> Detect{Service Detected?}
 
-    %% Service Detection
+    %% Service Detection (UPDATED: Added Docs)
     Detect -->|Gmail: email, inbox, send, compose| RouteGmail[Gmail Agent Router]
-    Detect -->|Drive: file, document, upload, share| RouteDrive[Drive Agent Router]
+    Detect -->|Drive: file, document, upload| RouteDrive[Drive Agent Router]
+    Detect -->|Docs: doc, google doc, document| RouteGDoc[GDoc Agent Router]
     Detect -->|Calendar: meeting, event, schedule| RouteCal[Calendar Agent Router]
-    Detect -->|Search: search, find, google, who is, research| RouteSearch[Search Agent Router]
+    Detect -->|Search: search, find, google, research| RouteSearch[Search Agent Router]
     %% Detect -->|Multiple Services| RouteMulti[Multi-Agent Orchestration]
-    Detect -->|None / General| RouteGeneral[General LLM Response]
+    Detect -->|None/General| RouteGeneral[General LLM Response]
 
     %% Gmail Branch
     RouteGmail --> AuthG{Gmail Auth Valid?}
@@ -18,7 +20,7 @@ flowchart TD
     GmailTools --> G2["Send Email<br/>send_email(to, subject, body)"]
     GmailTools --> G3["Read Thread<br/>get_thread(id)"]
 
-    %% Drive Branch (UPDATED: Current vs Future)
+    %% Drive Branch (Current vs Future)
     RouteDrive --> AuthD{Drive Auth Valid?}
     AuthD -- Yes --> DriveTools[Drive Tools]
     AuthD -- No --> RefreshD[Drive Token Refresh] --> AuthD
@@ -27,6 +29,19 @@ flowchart TD
     DriveTools --> D3["🚧 FUTURE: Share<br/>share_file(id, email)"]
     DriveTools --> D4["🚧 FUTURE: Upload<br/>upload_file(path)"]
     DriveTools --> D5["🚧 FUTURE: Delete<br/>delete_file(id)"]
+
+    %% GDoc Branch (NEW: Full capabilities from agent.py)
+    RouteGDoc --> AuthDoc{ GDoc Auth Valid?}
+    AuthDoc -- Yes --> GDocTools[GDoc Tools]
+    AuthDoc -- No --> RefreshDoc[GDoc Token Refresh] --> AuthDoc
+    GDocTools --> Doc1["✅ LIST Docs<br/>list_my_google_docs()"]
+    GDocTools --> Doc2["✅ FIND Docs<br/>find_document_by_title(title)"]
+    GDocTools --> Doc3["✅ CREATE Doc<br/>create_google_doc(title)"]
+    GDocTools --> Doc4["✅ DELETE Doc<br/>find → delete_google_doc(id)"]
+    GDocTools --> Doc5["✅ READ/WRITE<br/>docs_operation(id, action)"]
+    GDocTools --> Doc6["✅ SHARE Doc<br/>share_google_doc(id, email)"]
+    GDocTools --> Doc7["✅ VIEW Perms<br/>get_doc_permissions(id)"]
+    GDocTools --> Doc8["✅ UPDATE Perms<br/>update_doc_permission(id, email, role)"]
 
     %% Calendar Branch
     RouteCal --> AuthC{Calendar Auth Valid?}
@@ -43,15 +58,16 @@ flowchart TD
     SearchTools --> S4["X/Twitter Search<br/>twitter_search(query)"]
     SearchTools --> S5["Summarize Results<br/>summarize(results)"]
 
-    %% Convergence (UPDATED for new Drive nodes)
+    %% Convergence (UPDATED: Added GDoc nodes)
     G1 & G2 & G3 --> Format
-    D1 & D2 & D3 & D4 & D5 --> Format
+    D1 & D2 --> Format
+    Doc1 & Doc2 & Doc3 & Doc4 & Doc5 & Doc6 & Doc7 & Doc8 --> Format
     C1 & C2 & C3 --> Format
     S1 & S2 & S4 & S5 --> Format
     RouteGeneral --> Format
 
-    Format[Main Agent: Aggregate & Format Response] --> Log[Log Interaction + Tools Used]
-    Log --> End([Return Final Answer to User])
+    Format[Main Agent: Aggregate Response] --> Log[Log + Tools Used]
+    Log --> End([Final Answer])
 
     %% Styling
     classDef startEnd fill:#1DB954,stroke:#fff,color:white,font-weight:bold
@@ -60,9 +76,12 @@ flowchart TD
     classDef tools fill:#9C27B0,stroke:#fff,color:white
     classDef search fill:#FF9800,stroke:#fff,color:white
     classDef auth fill:#607D8B,stroke:#fff,color:white
+    classDef docs fill:#4CAF50,stroke:#fff,color:white
 
     class Start,End startEnd
-    class Detect,AuthG,AuthD,AuthC decision
-    class Parse,RouteGmail,RouteDrive,RouteCal,RouteSearch,RouteMulti,RouteGeneral,RefreshG,RefreshD,RefreshC,Format,Log,SearchTools,DriveTools process
-    class G1,G2,G3,D1,D2,D3,D4,D5,C1,C2,C3 tools
+    class Detect,AuthG,AuthD,AuthC,AuthDoc decision
+    class Parse,RouteGmail,RouteDrive,RouteGDoc,RouteCal,RouteSearch,RouteMulti,RouteGeneral,RefreshG,RefreshD,RefreshC,RefreshDoc,Format,Log,SearchTools,DriveTools,GDocTools process
+    class G1,G2,G3,D1,D2,C1,C2,C3 tools
     class S1,S2,S4,S5 search
+    class Doc1,Doc2,Doc3,Doc4,Doc5,Doc6,Doc7,Doc8 docs
+
