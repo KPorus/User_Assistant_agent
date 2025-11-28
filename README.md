@@ -37,9 +37,9 @@ Only an agent architecture can safely and reliably turn natural language request
   → General LLM fallback for reasoning/summarisation  
 
 
-### Run locally
+## Run locally
 
-## Shared setup (all Google agents)
+### Shared setup (all Google agents)
 
 For all four agents, keep the flow and wording identical:
 
